@@ -1,14 +1,14 @@
-//Calculos del modelo M/D/1.
+//Calculos del modelo M/G/1.
 import type { QueueInput, QueueResult } from "../../models/queue.types";
 
-export function calculateMD1 (data:QueueInput): QueueResult {
+export function calculateMG1 (data:QueueInput): QueueResult {
     const { lambda, mu } = data;
     const sigma2 = data.sigma2 ?? 0;
 
     const rho = lambda / mu;
     const p0 = 1 - rho;
 
-    const Lq = (((lambda * lambda) * (sigma2 * sigma2)) + (rho * rho)) / (2 * p0);
+    const Lq = (((Math.pow(lambda, 2)) * (Math.pow(sigma2,2))) + (Math.pow(rho,2))) / (2 * p0);
     const LqRounded = Math.ceil(Lq);
 
     const L = LqRounded + (lambda/mu)

@@ -6,7 +6,7 @@ export function calculateMM1(data: QueueInput): QueueResult {
 
     const rho = lambda / mu;
     const p0 = 1 - rho;
-    const Lq = (lambda * lambda) / (mu * (mu - lambda));
+    const Lq = (Math.pow(lambda,2)) / (mu * (mu - lambda));
     const LqRounded = Math.ceil(Lq);
     const L = LqRounded + ( lambda / mu );
     const LRounded = Math.ceil(L);
