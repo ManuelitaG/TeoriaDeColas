@@ -7,7 +7,7 @@ export interface QueueInput {
     lambda: number;
     mu: number;
     s?: number;
-    sigma?: number;
+    sigma2?: number;
 }
 
 export interface QueueResult {
