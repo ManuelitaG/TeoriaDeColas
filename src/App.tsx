@@ -39,7 +39,7 @@ function App() {
     }
 
     if (input.lambda >= capacity) {
-      return `El sistema no es estable: lambda debe ser menor que ${capacity.toFixed(2)}.`
+      return `El sistema no es estable: datos no validos.`
     }
 
     return ''

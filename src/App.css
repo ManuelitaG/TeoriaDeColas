@@ -490,6 +490,10 @@ progress::-moz-progress-bar {
   margin-bottom: 18px;
 }
 
+.comparison-controls.single-control {
+  grid-template-columns: 1fr;
+}
+
 .comparison-model,
 .comparison-winner {
   padding: 16px;
@@ -549,6 +553,16 @@ progress::-moz-progress-bar {
   border-top: 1px solid var(--line);
 }
 
+.comparison-row-wide {
+  grid-template-columns: 1.2fr repeat(6, minmax(82px, 1fr));
+}
+
+.comparison-row small {
+  grid-column: 1 / -1;
+  color: var(--warn);
+  font-size: 0.82rem;
+}
+
 .comparison-row:first-child {
   border-top: 0;
 }
@@ -558,9 +572,26 @@ progress::-moz-progress-bar {
   font-weight: 800;
 }
 
+.comparison-row.winner-row {
+  background: var(--accent-soft);
+}
+
+.comparison-row.winner-row span,
+.comparison-row.winner-row strong {
+  color: var(--accent-strong);
+}
+
 .comparison-row strong,
 .comparison-delta {
   font-size: 0.98rem;
+}
+
+.status-text {
+  color: var(--warn);
+}
+
+.status-text.stable {
+  color: var(--accent-strong);
 }
 
 .comparison-delta {

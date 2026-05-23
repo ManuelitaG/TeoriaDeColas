@@ -68,8 +68,8 @@ export function QueueForm({ input, onChange }: QueueFormProps) {
         />
         <NumberField
           label="Tasa de servicio mu"
-          min={0.01}
-          step={0.01}
+          min={0}
+          step={1}
           value={input.mu}
           onChange={(value) => updateField('mu', value)}
         />
@@ -110,7 +110,7 @@ function NumberField({ label, min, step, value, onChange }: NumberFieldProps) {
       <span>{label}</span>
       <input
         min={min}
-        onChange={(event) => onChange(Number(event.target.value))}
+        onChange={(event) => onChange(event.target.value ? Number(event.target.value) : NaN)}
         step={step}
         type="number"
         value={Number.isFinite(value) ? value : ''}
