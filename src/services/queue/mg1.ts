@@ -8,13 +8,13 @@ export function calculateMG1 (data:QueueInput): QueueResult {
     const rho = lambda / mu;
     const p0 = 1 - rho;
 
-    const Lq = (((Math.pow(lambda, 2)) * (Math.pow(sigma2,2))) + (Math.pow(rho,2))) / (2 * p0);
+    const Lq = (((Math.pow(lambda, 2)) * sigma2) + (Math.pow(rho,2))) / (2 * p0);
     const LqRounded = Math.ceil(Lq);
 
     const L = LqRounded + (lambda/mu)
     const LRounded = Math.ceil(L);
 
-    const Wq = LqRounded / lambda;
+    const Wq = Lq / lambda;
     const W = Wq + (1/mu);
 
     return {

@@ -10,8 +10,8 @@ export function calculateMM1(data: QueueInput): QueueResult {
     const LqRounded = Math.ceil(Lq);
     const L = LqRounded + ( lambda / mu );
     const LRounded = Math.ceil(L);
-    const Wq = LqRounded / lambda;
-    const W = Wq + ( 1 / lambda);
+    const Wq = Lq / lambda;
+    const W = Wq + ( 1 / mu);
 
     return {
         rho,

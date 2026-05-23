@@ -6,8 +6,8 @@ export function calculateMMS (data:QueueInput): QueueResult {
     const { lambda, mu } = data;
     const s = data.s ?? 1;
 
-    
     const lambdaOverMu = lambda / mu;
+    const rho = lambda / (s * mu);
 
     //Variable acumuladora
   let sum = 0; 
@@ -24,15 +24,14 @@ export function calculateMMS (data:QueueInput): QueueResult {
 
   // P0 = 1 / [sumatoria + secondPart]
   const p0 = 1 / (sum + secondPart);
-  const rho = ((1 / factorial(s)) * Math.pow(lambdaOverMu, s) * ((s * mu) / ((s * mu) - lambda))) * p0;
 
-  const Lq = ((Math.pow(lambdaOverMu, s)) * (lambda * mu)) / ((factorial(s-1)) * (Math.pow(((s*mu)-lambda),2)));
+  const Lq = (p0 * Math.pow(lambdaOverMu, s) * rho) / (factorial(s) * Math.pow(1 - rho, 2));
   const LqRounded = Math.ceil(Lq);
 
   const L = LqRounded + lambdaOverMu;
   const LRounded = Math.ceil(L);
 
-  const Wq = LqRounded / lambda;
+  const Wq = Lq / lambda;
   const W = Wq + (1/mu);
 
   return {
