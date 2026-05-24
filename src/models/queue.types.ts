@@ -8,6 +8,14 @@ export interface QueueInput {
     mu: number;
     s?: number;
     sigma2?: number;
+    serviceCostPerHour: number;
+    waitingCostPerHour: number;
+}
+
+export interface QueueCostResult {
+  waitingCost: number;
+  serviceCost: number;
+  totalCost: number;
 }
 
 export interface QueueResult {
@@ -20,5 +28,7 @@ export interface QueueResult {
     Wq: number;
     W: number;
     stable: boolean;
+    servers: number;
+    cost?: QueueCostResult;
 
 }
