@@ -91,6 +91,20 @@ export function QueueForm({ input, onChange }: QueueFormProps) {
             onChange={(value) => updateField('sigma2', value)}
           />
         )}
+        <NumberField
+          label="Costo de servicio por hora"
+          min={0}
+          step={0.1}
+          value={input.serviceCostPerHour}
+          onChange={(value) => updateField('serviceCostPerHour', value)}
+        />
+        <NumberField
+          label="Costo de espera por hora"
+          min={0}
+          step={0.1}
+          value={input.waitingCostPerHour}
+          onChange={(value) => updateField('waitingCostPerHour', value)}
+        />
       </div>
     </form>
   )

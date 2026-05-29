@@ -13,7 +13,7 @@ export function calculateMD1 (data:QueueInput): QueueResult {
     const L = LqRounded + (lambda/mu);
     const LRounded = Math.ceil(L);
 
-    const Wq = Lq / lambda;
+    const Wq = LqRounded / lambda;
     const W = Wq + (1/mu);
 
     return{
@@ -26,6 +26,7 @@ export function calculateMD1 (data:QueueInput): QueueResult {
         Wq,
         W,
         stable: rho < 1,
+        servers: s,
     };
 
 }

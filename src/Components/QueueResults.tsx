@@ -36,6 +36,14 @@ export function QueueResults({ input, result, validation }: QueueResultsProps) {
     { label: 'W total', value: result.W, suffix: ' tiempo', mode: 'decimal' },
   ]
 
+  const costMetrics = result.cost
+    ? [
+        { label: 'Costo servicio por hora', value: result.cost.serviceCost, suffix: '', mode: 'currency' },
+        { label: 'Costo espera por hora', value: result.cost.waitingCost, suffix: '', mode: 'currency' },
+        { label: 'Costo total estimado', value: result.cost.totalCost, suffix: '', mode: 'currency' },
+      ]
+    : []
+
   return (
     <section className="results-panel">
       <div className="section-heading">
@@ -64,11 +72,31 @@ export function QueueResults({ input, result, validation }: QueueResultsProps) {
                 : `${formatNumber(metric.value)}${metric.suffix}`}
             </strong>
             {metric.showDecimal && (
-              <small>Porcentaje: {formatNumber(metric.value*100)}%</small>
+              <small>Porcentaje: {formatNumber(metric.value * 100)}%</small>
             )}
           </article>
         ))}
       </div>
+
+      {costMetrics.length > 0 && (
+        <div className="cost-section">
+          <div className="section-heading">
+            <span>04</span>
+            <div>
+              <h2>Costos estimados</h2>
+              <p>Costo por servicio, espera y total calculados a partir del modelo.</p>
+            </div>
+          </div>
+          <div className="metric-grid cost-grid">
+            {costMetrics.map((metric) => (
+              <article className="metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.mode === 'currency' ? formatCurrency(metric.value) : `${formatNumber(metric.value)}${metric.suffix}`}</strong>
+              </article>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   )
 }
@@ -77,5 +105,13 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat('es-CO', {
     maximumFractionDigits: 3,
     minimumFractionDigits: 0,
+  }).format(value)
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
   }).format(value)
 }

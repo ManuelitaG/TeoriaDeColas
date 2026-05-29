@@ -15,6 +15,8 @@ const initialInput: QueueInput = {
   mu: 12,
   s: 2,
   sigma2: 0.01,
+  serviceCostPerHour: 0,
+  waitingCostPerHour: 0,
 }
 
 function App() {
@@ -36,6 +38,10 @@ function App() {
 
     if (input.model === 'MG1' && (input.sigma2 ?? 0) < 0) {
       return 'La varianza del servicio no puede ser negativa.'
+    }
+
+    if (input.serviceCostPerHour < 0 || input.waitingCostPerHour < 0) {
+      return 'Los costos deben ser valores mayores o iguales a cero.'
     }
 
     if (input.lambda >= capacity) {

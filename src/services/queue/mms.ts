@@ -31,7 +31,7 @@ export function calculateMMS (data:QueueInput): QueueResult {
   const L = LqRounded + lambdaOverMu;
   const LRounded = Math.ceil(L);
 
-  const Wq = Lq / lambda;
+  const Wq = LqRounded / lambda;
   const W = Wq + (1/mu);
 
   return {
@@ -44,6 +44,7 @@ export function calculateMMS (data:QueueInput): QueueResult {
     Wq,
     W,
     stable: rho < 1,
+    servers: s,
   };
 
 }

@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import type { QueueResult } from '../models/queue.types'
-import { calculateMM1 } from '../services/queue/mm1'
-import { calculateMMS } from '../services/queue/mms'
+import { calculateQueue } from '../services/queue/queue.service'
 
 interface ComparisonInput {
   lambda: number
   mu: number
   maxServers: number
+  serviceCostPerHour: number
+  waitingCostPerHour: number
 }
 
 interface ComparisonOption {
@@ -20,6 +21,8 @@ const initialComparison: ComparisonInput = {
   lambda: 8,
   mu: 12,
   maxServers: 4,
+  serviceCostPerHour: 50,
+  waitingCostPerHour: 100,
 }
 
 export function QueueComparison() {
@@ -33,6 +36,7 @@ export function QueueComparison() {
         validation,
         options: [],
         winner: null,
+        cheapest: null,
       }
     }
 
@@ -40,16 +44,23 @@ export function QueueComparison() {
     const viableOptions = options.filter((option): option is ComparisonOption & { result: QueueResult } =>
       Boolean(option.result),
     )
+    
     const winner = viableOptions.reduce<ComparisonOption | null>((best, option) => {
       if (!best?.result) return option
-
       return option.result.Wq < best.result.Wq ? option : best
+    }, null)
+
+    const cheapest = viableOptions.reduce<ComparisonOption | null>((best, option) => {
+      if (!best?.result?.cost) return option
+      if (!option.result?.cost) return best
+      return option.result.cost.totalCost < best.result.cost.totalCost ? option : best
     }, null)
 
     return {
       validation: '',
       options,
       winner,
+      cheapest,
     }
   }, [input])
 
@@ -90,6 +101,24 @@ export function QueueComparison() {
                 setInput((current) => ({ ...current, maxServers: Math.max(1, Math.round(maxServers)) }))
               }
             />
+            <NumberField
+              label="Costo de servicio por hora"
+              min={0}
+              step={1}
+              value={input.serviceCostPerHour}
+              onChange={(serviceCostPerHour) =>
+                setInput((current) => ({ ...current, serviceCostPerHour }))
+              }
+            />
+            <NumberField
+              label="Costo de espera por hora"
+              min={0}
+              step={1}
+              value={input.waitingCostPerHour}
+              onChange={(waitingCostPerHour) =>
+                setInput((current) => ({ ...current, waitingCostPerHour }))
+              }
+            />
           </div>
         </div>
       </div>
@@ -101,14 +130,27 @@ export function QueueComparison() {
         </div>
       ) : (
         <>
-          <div className="comparison-winner">
-            <span>Modelo mas optimo</span>
-            <strong>{comparison.winner?.label ?? 'Sin opciones viables'}</strong>
-            <p>
-              {comparison.winner?.result
-                ? `Criterio: menor Wq (${formatNumber(comparison.winner.result.Wq)}).`
-                : 'Ninguna opcion es estable con los parametros ingresados.'}
-            </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div className="comparison-winner">
+              <span>Modelo mas eficiente</span>
+              <strong>{comparison.winner?.label ?? 'Sin opciones viables'}</strong>
+              <p>
+                {comparison.winner?.result
+                  ? `Criterio: menor Wq (${formatNumber(comparison.winner.result.Wq)}).`
+                  : 'Ninguna opcion es estable con los parametros ingresados.'}
+              </p>
+            </div>
+            {comparison.cheapest && (
+              <div className="comparison-winner" style={{ borderColor: '#10b981' }}>
+                <span>Modelo mas barato</span>
+                <strong>{comparison.cheapest.label}</strong>
+                <p>
+                  {comparison.cheapest.result?.cost
+                    ? `Costo total: ${formatCurrency(comparison.cheapest.result.cost.totalCost)}.`
+                    : 'Sin costos calculados.'}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="comparison-table" role="table" aria-label="Comparacion por cantidad de servidores">
@@ -117,15 +159,17 @@ export function QueueComparison() {
               <span role="columnheader">Estado</span>
               <span role="columnheader">Utilizacion</span>
               <span role="columnheader">Lq</span>
-              <span role="columnheader">Lq Redondeado</span>
               <span role="columnheader">Wq</span>
-              <span role="columnheader">W</span>
+              <span role="columnheader">Costo Servicio</span>
+              <span role="columnheader">Costo Espera</span>
+              <span role="columnheader">Costo Total</span>
             </div>
             {comparison.options.map((option) => (
               <ComparisonOptionRow
                 key={option.label}
                 option={option}
                 winnerLabel={comparison.winner?.label}
+                cheapestLabel={comparison.cheapest?.label}
               />
             ))}
           </div>
@@ -138,23 +182,37 @@ export function QueueComparison() {
 function ComparisonOptionRow({
   option,
   winnerLabel,
+  cheapestLabel,
 }: {
   option: ComparisonOption
   winnerLabel?: string
+  cheapestLabel?: string
 }) {
   const isWinner = option.label === winnerLabel
+  const isCheapest = option.label === cheapestLabel
 
   return (
-    <div className={isWinner ? 'comparison-row comparison-row-wide winner-row' : 'comparison-row comparison-row-wide'} role="row">
+    <div 
+      className={isWinner || isCheapest ? `comparison-row comparison-row-wide ${isWinner ? 'winner-row' : ''}` : 'comparison-row comparison-row-wide'} 
+      style={isCheapest && !isWinner ? { borderColor: '#10b981', borderWidth: '2px' } : undefined}
+      role="row"
+    >
       <span role="cell">{option.label}</span>
       <strong className={option.result ? 'status-text stable' : 'status-text'} role="cell">
         {option.result ? 'Viable' : 'No viable'}
       </strong>
       <strong role="cell">{option.result ? formatMetric(option.result.rho, 'percent') : '-'}</strong>
       <strong role="cell">{option.result ? formatNumber(option.result.Lq) : '-'}</strong>
-      <strong role="cell">{option.result ? formatNumber(option.result.LqRounded) : '-'}</strong>
       <strong role="cell">{option.result ? formatNumber(option.result.Wq) : '-'}</strong>
-      <strong role="cell">{option.result ? formatNumber(option.result.W) : '-'}</strong>
+      <strong role="cell">
+        {option.result?.cost ? formatCurrency(option.result.cost.serviceCost) : '-'}
+      </strong>
+      <strong role="cell">
+        {option.result?.cost ? formatCurrency(option.result.cost.waitingCost) : '-'}
+      </strong>
+      <strong role="cell">
+        {option.result?.cost ? formatCurrency(option.result.cost.totalCost) : '-'}
+      </strong>
       {!option.result && <small>{option.validation}</small>}
     </div>
   )
@@ -213,9 +271,14 @@ function buildOptions(input: ComparisonInput): ComparisonOption[] {
     return {
       label,
       servers,
-      result: servers === 1
-        ? calculateMM1({ model: 'MM1', lambda: input.lambda, mu: input.mu })
-        : calculateMMS({ model: 'MMS', lambda: input.lambda, mu: input.mu, s: servers }),
+      result: calculateQueue({
+        model: servers === 1 ? 'MM1' : 'MMS',
+        lambda: input.lambda,
+        mu: input.mu,
+        s: servers,
+        serviceCostPerHour: input.serviceCostPerHour,
+        waitingCostPerHour: input.waitingCostPerHour,
+      }),
       validation: '',
     }
   })
@@ -243,5 +306,13 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat('es-CO', {
     maximumFractionDigits: 3,
     minimumFractionDigits: 0,
+  }).format(value)
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
   }).format(value)
 }
